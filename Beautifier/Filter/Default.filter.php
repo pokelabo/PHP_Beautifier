@@ -320,16 +320,22 @@ final class PHP_Beautifier_Filter_Default extends PHP_Beautifier_Filter
     {
         $matches = "";
         $minNL = 2;
-        if($this->oBeaut->isPreviousTokenConstant(T_COMMENT)) {
+        if ($this->oBeaut->isPreviousTokenConstant(T_COMMENT)) {
             $prevToken = $this->oBeaut->getPreviousTokenContent(1);
-            $tokenEnd = substr($prevToken,strlen($prevToken)-2);
-            if($tokenEnd=="*/") {
+            $tokenEnd = substr($prevToken,strlen($prevToken) - 2);
+            if ($tokenEnd == "*/") {
                 $minNL = 2;
-            }else{
+            } else {
                 $minNL = 1;
             }
         }
-        if(preg_match_all("/\r\n|\r|\n/",$sTag,$matches)>=$minNL){
+        $count = preg_match_all("/\r\n|\r|\n/",$sTag,$matches);
+        if ($minNL <= $count) {
+            $pop = $this->oBeaut->pop();
+            $this->oBeaut->add(trim($pop, " \t"));
+            while (1 < --$count) {
+                $this->oBeaut->add("\n");
+            }
             $this->oBeaut->addNewLineIndent();
             $this->oBeaut->addedBlankLine = true;
         } else {
