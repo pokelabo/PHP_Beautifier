@@ -20,7 +20,7 @@
  * @link      http://pear.php.net/package/PHP_Beautifier
  * @link      http://beautifyphp.sourceforge.net
  */
-error_reporting(E_ALL ^ E_STRICT);
+error_reporting(E_ALL);
 // Before all, test the tokenizer extension
 if (!extension_loaded('tokenizer')) {
     throw new Exception("Compile php with tokenizer extension. Use --enable-tokenizer or don't use --disable-all on configure.");
@@ -85,6 +85,7 @@ class PHP_Beautifier implements PHP_Beautifier_Interface
 {
     // public
 
+    public $addedBlankLine = false;
     /**
      * Tokens created by the tokenizer
      * @var array
@@ -381,11 +382,10 @@ class PHP_Beautifier implements PHP_Beautifier_Interface
             T_ENDDECLARE => 'T_END_SUFFIX',
             T_ENDSWITCH => 'T_END_SUFFIX',
             T_ENDIF => 'T_END_SUFFIX',
+            // for PHP 5.3
+            T_NAMESPACE => 'T_INCLUDE',
+            T_USE => 'T_INCLUDE',
         );
-        if (version_compare(PHP_VERSION, '5.3.0', '>=')) {
-            $aTokensToChange[T_NAMESPACE] = 'T_INCLUDE';
-            $aTokensToChange[T_USE] = 'T_INCLUDE';
-        }
         foreach ($aTokensToChange as $iToken => $sFunction) {
             $this->aTokenFunctions[$iToken] = $sFunction;
         }
@@ -1779,8 +1779,10 @@ class PHP_Beautifier implements PHP_Beautifier_Interface
         for ($i = count($this->aOut) -1 ; $i >= 0 ; $i--) { // go backwards
             $cNow = &$this->aOut[$i];
             if (strlen(trim($cNow)) == 0) { // only space
-                array_pop($this->aOut); // delete it!
-                $pop++;
+                if (!$this->addedBlankLine || ($cNow!="\r" && $cNow!="\n")) {
+                    array_pop($this->aOut); // delete it!
+                    $pop++;
+                }
             } else { // we find something!
                 $cNow = rtrim($cNow); // rtrim out
                 break;

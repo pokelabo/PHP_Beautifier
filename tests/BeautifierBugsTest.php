@@ -184,7 +184,6 @@ SCRIPT;
             echo "Hello";
         }
     }
-
 ?>
 SCRIPT;
         $this->setText($sText);
@@ -205,6 +204,7 @@ class Foo {
             yea();
         }
     }
+    
     function bar() {
         echo "Hello";
     }
@@ -321,7 +321,6 @@ class CampaignManagerConfig {
     }
         
 }
-
 ?>
 SCRIPT;
         $this->setText($sText);
@@ -329,11 +328,14 @@ SCRIPT;
 <?php
 class CampaignManagerConfig
 {
+    
     const BLOCKSIZE_ALL = 9999999;
+    
     public static function getStagingUrl(\$liveUrl)
     {
         return true;
     }
+    
 }
 ?>
 SCRIPT;
@@ -667,7 +669,6 @@ class test
  public function test(OtherClass \$otherclass) {
         echo \$otherclass->var;
     }
-
 }
 ?>
 SCRIPT;
@@ -737,20 +738,35 @@ $this->setText($sText);
 <?php
 if (empty(\$user_password) AND empty(\$user_password2)) {
     \$user_password = makepass();
+    
 } elseif (\$user_password != \$user_password2) {
+    
     title(_NEWUSERERROR);
+    
     OpenTable();
+    
     echo '<center><b>' . _PASSDIFFERENT . '</b><br /><br />' . _GOBACK . '</center>';
+    
     CloseTable();
+    
     include_once ('footer.php');
+    
     die();
+    
 } elseif (\$user_password == \$user_password2 AND strlen(\$user_password) < \$minpass) {
+    
     title(_NEWUSERERROR);
+    
     OpenTable();
+    
     echo '<center>' . _YOUPASSMUSTBE . ' <b>' . \$minpass . '</b>' . _CHARLONG . '<br /><br />' . _GOBACK . '</center>';
+    
     CloseTable();
+    
     include_once ('footer.php');
+    
     die();
+    
 }
 ?>
 SCRIPT;
