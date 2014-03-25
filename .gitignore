@@ -5,3 +5,6 @@ create_doc
 subir_sitio
 *~
 pkg
+
+/composer.phar
+/composer.lock
