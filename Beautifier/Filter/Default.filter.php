@@ -86,7 +86,11 @@ final class PHP_Beautifier_Filter_Default extends PHP_Beautifier_Filter
      */
     public function t_access($sTag)
     {
-        $this->oBeaut->add($sTag . ' ');
+        if ($this->oBeaut->isNextTokenConstant(T_DOUBLE_COLON)) {
+            $this->oBeaut->add($sTag);
+        } else {
+            $this->oBeaut->add($sTag . ' ');
+        }
     }
     /**
      * t_end_heredoc
