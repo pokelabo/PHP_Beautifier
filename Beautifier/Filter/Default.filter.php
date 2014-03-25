@@ -604,7 +604,13 @@ final class PHP_Beautifier_Filter_Default extends PHP_Beautifier_Filter
      */
     function t_language_construct($sTag)
     {
-        $this->oBeaut->add($sTag . ' ');
+        if ($this->oBeaut->getMode("function") &&
+            $this->oBeaut->isNextTokenConstant('(')) {
+            // it is a lamda.
+            $this->oBeaut->add($sTag);
+        } else {
+            $this->oBeaut->add($sTag . ' ');
+        }
     }
     /**
      * t_constant_encapsed_string
