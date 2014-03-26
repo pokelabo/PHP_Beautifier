@@ -1,5 +1,4 @@
 <?php
-
 /* vim: set expandtab tabstop=4 shiftwidth=4 softtabstop=4: */
 
 /**
@@ -36,6 +35,7 @@ require_once 'PEAR.php';
 
 // {{{ constants
 
+
 /**
  * Methods return this if they succeed
  */
@@ -43,6 +43,7 @@ define('NET_SAMPLE_OK', 1);
 
 // }}}
 // {{{ GLOBALS
+
 
 /**
  * The number of objects created
@@ -52,6 +53,7 @@ $GLOBALS['NET_SAMPLE_Count'] = 0;
 
 // }}}
 // {{{ Net_Sample
+
 
 /**
  * An example of how to write code to PEAR's standards
@@ -102,7 +104,8 @@ $GLOBALS['NET_SAMPLE_Count'] = 0;
 class Net_Sample
 {
     // {{{ properties
-
+    
+    
     /**
      * The status of foo's universe
      *
@@ -111,7 +114,7 @@ class Net_Sample
      * @var string
      */
     var $foo = 'unknown';
-
+    
     /**
      * The status of life
      *
@@ -122,10 +125,11 @@ class Net_Sample
      * @access private
      */
     var $_good = true;
-
+    
     // }}}
     // {{{ setFoo()
-
+    
+    
     /**
      * Registers the status of foo's universe
      *
@@ -213,7 +217,7 @@ class Net_Sample
          * This is a "Block Comment."  The format is the same as
          * Docblock Comments except there is only one asterisk at the
          * top.  phpDocumentor doesn't parse these.
-         */
+        */
         if ($arg1 == 'good' || $arg1 == 'fair') {
             $this->foo = $arg1;
             return 1;
@@ -224,8 +228,10 @@ class Net_Sample
             return false;
         }
     }
-
+    
     // }}}
+    
+    
 }
 
 // }}}
@@ -236,6 +242,6 @@ class Net_Sample
  * c-basic-offset: 4
  * c-hanging-comment-ender-p: nil
  * End:
- */
+*/
 
 ?>

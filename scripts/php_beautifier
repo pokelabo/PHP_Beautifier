@@ -52,7 +52,7 @@
     */
     require_once 'PHP/Beautifier/Batch.php';
     define('PHP_Beautifier_WINDOWS', substr(PHP_OS, 0, 3) == 'WIN');
-    error_reporting(E_ALL);
+    error_reporting(E_ALL ^ E_STRICT);
     // get log object
     $oLog = PHP_Beautifier_Common::getLog();
     

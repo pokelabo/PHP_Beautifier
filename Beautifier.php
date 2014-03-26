@@ -84,7 +84,8 @@ require_once 'Beautifier/StreamWrapper.php';
 class PHP_Beautifier implements PHP_Beautifier_Interface
 {
     // public
-    
+
+    public $addedBlankLine = false;
     /**
      * Tokens created by the tokenizer
      * @var array
@@ -145,7 +146,7 @@ class PHP_Beautifier implements PHP_Beautifier_Interface
      * Level of ternary operator nesting
      * @var int
      */
-    public $iTernary = 0;    
+    public $iTernary = 0;
     /**
      * Level of parenthesis nesting
      * @var int
@@ -191,9 +192,9 @@ class PHP_Beautifier implements PHP_Beautifier_Interface
      * @var array
      */
     public $aCurrentToken = array();
-    
+
     // private
-    
+
     /**
      * type of file
      */
@@ -225,7 +226,7 @@ class PHP_Beautifier implements PHP_Beautifier_Interface
      * List of Control for parenthesis
      */
     private $aControlParenthesis = array();
-    /** 
+    /**
      * List of construct that end control structures
      */
     private $aControlStructuresEnd = array();
@@ -242,16 +243,16 @@ class PHP_Beautifier implements PHP_Beautifier_Interface
     /** Mark the begin of the end of a DoWhile sequence **/
     private $doWhileBeginEnd;
     // Methods
-    
+
     /**
      * Constructor.
      * Assing values to {@link $aControlStructures},{@link $aControlStructuresEnd},
      * {@link $aTokenFunctions}
-     * 
+     *
      * @access public
      * @return void
      */
-    public function __construct() 
+    public function __construct()
     {
         $this->aControlStructures = array(
             T_CLASS,
@@ -381,11 +382,10 @@ class PHP_Beautifier implements PHP_Beautifier_Interface
             T_ENDDECLARE => 'T_END_SUFFIX',
             T_ENDSWITCH => 'T_END_SUFFIX',
             T_ENDIF => 'T_END_SUFFIX',
+            // for PHP 5.3
+            T_NAMESPACE => 'T_INCLUDE',
+            T_USE => 'T_INCLUDE',
         );
-        if (version_compare(PHP_VERSION, '5.3.0', '>=')) {
-            $aTokensToChange[T_NAMESPACE] = 'T_INCLUDE';
-            $aTokensToChange[T_USE] = 'T_INCLUDE';
-        }
         foreach ($aTokensToChange as $iToken => $sFunction) {
             $this->aTokenFunctions[$iToken] = $sFunction;
         }
@@ -395,14 +395,14 @@ class PHP_Beautifier implements PHP_Beautifier_Interface
     }
 
     /**
-     * getTokenName 
-     * 
+     * getTokenName
+     *
      * @param mixed $iToken Token
      *
      * @access public
      * @return void
      */
-    public function getTokenName($iToken) 
+    public function getTokenName($iToken)
     {
         if (!$iToken) {
             throw new Exception("Token $iToken doesn't exists");
@@ -412,14 +412,14 @@ class PHP_Beautifier implements PHP_Beautifier_Interface
 
     /**
      * Start the log for debug
-     * 
+     *
      * @param string $sFile  Filename
      * @param mixed  $iLevel Debug Level. See {$link Log}
      *
      * @access public
      * @return void
      */
-    public function startLog($sFile = 'php_beautifier.log', $iLevel = PEAR_LOG_DEBUG) 
+    public function startLog($sFile = 'php_beautifier.log', $iLevel = PEAR_LOG_DEBUG)
     {
         @unlink($sFile);
         $oLogFile = Log::factory('file', $sFile, 'php_beautifier', array(), PEAR_LOG_DEBUG);
@@ -428,14 +428,14 @@ class PHP_Beautifier implements PHP_Beautifier_Interface
 
     /**
      * Add a filter directory
-     * 
+     *
      * @param mixed $sDir Paht to directory
      *
      * @access public
      * @return void
      * @throws Exception
      */
-    public function addFilterDirectory($sDir) 
+    public function addFilterDirectory($sDir)
     {
         $sDir = PHP_Beautifier_Common::normalizeDir($sDir);
         if (file_exists($sDir)) {
@@ -446,23 +446,23 @@ class PHP_Beautifier implements PHP_Beautifier_Interface
     }
     /**
      * Return an array with all the Filter Dirs
-     * 
+     *
      * @access public
      * @return array List of Filter Directories
      */
-    public function getFilterDirectories() 
+    public function getFilterDirectories()
     {
         return $this->aFilterDirs;
     }
     /**
-     * addFilterObject 
-     * 
+     * addFilterObject
+     *
      * @param PHP_Beautifier_Filter $oFilter PHP_Beautifier_Filter Object
      *
      * @access public
      * @return void
      */
-    public function addFilterObject(PHP_Beautifier_Filter $oFilter) 
+    public function addFilterObject(PHP_Beautifier_Filter $oFilter)
     {
         array_unshift($this->aFilters, $oFilter);
         return true;
@@ -471,7 +471,7 @@ class PHP_Beautifier implements PHP_Beautifier_Interface
     /**
      * Add a Filter to the Beautifier
      * The first argument is the name of the file of the Filter.
-     * 
+     *
      * @param mixed $mFilter   Name of the Filter
      * @param array $aSettings Settings for the Filter
      *
@@ -480,7 +480,7 @@ class PHP_Beautifier implements PHP_Beautifier_Interface
      * @return bool true if Filter is loaded, false if the same filter was loaded previously
      * @throws Exception
      */
-    public function addFilter($mFilter, $aSettings = array()) 
+    public function addFilter($mFilter, $aSettings = array())
     {
         if ($mFilter instanceOf PHP_Beautifier_Filter) {
             return $this->addFilterObject($mFilter);
@@ -502,13 +502,13 @@ class PHP_Beautifier implements PHP_Beautifier_Interface
 
     /**
      * Removes a Filter
-     * 
+     *
      * @param mixed $sFilter Name of the Filter
      *
      * @access public
      * @return bool true if Filter is removed, false otherwise
      */
-    public function removeFilter($sFilter) 
+    public function removeFilter($sFilter)
     {
         $sFilterName = strtolower('PHP_Beautifier_Filter_' . $sFilter);
         foreach ($this->aFilters as $sId => $oFilter) {
@@ -522,14 +522,14 @@ class PHP_Beautifier implements PHP_Beautifier_Interface
 
     /**
      * Return the Filter Description
-     * 
+     *
      * @param mixed $sFilter Name of the filter
      *
      * @access public
      * @return mixed string or false
      * @see PHP_Beautifier_Filter::__toString();
      */
-    public function getFilterDescription($sFilter) 
+    public function getFilterDescription($sFilter)
     {
         $aFilters = $this->getFilterListTotal();
         if (in_array($sFilter, $aFilters)) {
@@ -545,7 +545,7 @@ class PHP_Beautifier implements PHP_Beautifier_Interface
     /**
      * Add a new filter to the processor.
      * The system will process the filter in LIFO order
-     * 
+     *
      * @param mixed $sFilter Name of the filter
      *
      * @access private
@@ -553,7 +553,7 @@ class PHP_Beautifier implements PHP_Beautifier_Interface
      * @return bool
      * @throws  Exception
      */
-    private function addFilterFile($sFilter) 
+    private function addFilterFile($sFilter)
     {
         $sFilterClass = 'PHP_Beautifier_Filter_' . $sFilter;
         if (class_exists($sFilterClass)) {
@@ -575,11 +575,11 @@ class PHP_Beautifier implements PHP_Beautifier_Interface
 
     /**
      * Get the names of the loaded filters
-     * 
+     *
      * @access public
      * @return array list of Filters
      */
-    public function getFilterList() 
+    public function getFilterList()
     {
         foreach ($this->aFilters as $oFilter) {
             $aOut[] = $oFilter->getName();
@@ -589,11 +589,11 @@ class PHP_Beautifier implements PHP_Beautifier_Interface
 
     /**
      * Get the list of all available Filters in all the include Dirs
-     * 
+     *
      * @access public
      * @return array list of Filters
      */
-    public function getFilterListTotal() 
+    public function getFilterListTotal()
     {
         $aFilterFiles = array();
         foreach ($this->aFilterDirs as $sDir) {
@@ -613,108 +613,108 @@ class PHP_Beautifier implements PHP_Beautifier_Interface
 
     /**
      * Receive a path to a filter and replace it with the name of filter
-     * 
+     *
      * @param mixed &$sFile File name
      *
      * @access private
      * @return void
      */
-    private function getFilterList_FilterName(&$sFile) 
+    private function getFilterList_FilterName(&$sFile)
     {
         $aMatch=array();
         preg_match("/\/([^\/]*?)\.filter\.php/", $sFile, $aMatch);
         $sFile = $aMatch[1];
     }
     /**
-     * getIndentChar 
-     * 
+     * getIndentChar
+     *
      * @access public
      * @return void
      */
-    public function getIndentChar() 
+    public function getIndentChar()
     {
         return $this->sIndentChar;
     }
     /**
-     * getIndentNumber 
-     * 
+     * getIndentNumber
+     *
      * @access public
      * @return void
      */
-    public function getIndentNumber() 
+    public function getIndentNumber()
     {
         return $this->iIndentNumber;
     }
     /**
-     * getIndent 
-     * 
+     * getIndent
+     *
      * @access public
      * @return void
      */
-    public function getIndent() 
+    public function getIndent()
     {
         return $this->iIndent;
     }
     /**
-     * getNewLine 
-     * 
+     * getNewLine
+     *
      * @access public
      * @return void
      */
-    public function getNewLine() 
+    public function getNewLine()
     {
         return $this->sNewLine;
     }
 
     /**
      * Character used for indentation
-     * 
+     *
      * @param string $sChar Usually ' ' or "\t"
      *
      * @access public
      * @return void
      */
-    public function setIndentChar($sChar) 
+    public function setIndentChar($sChar)
     {
         $this->sIndentChar = $sChar;
     }
 
     /**
      * Number of characters for indentation
-     * 
+     *
      * @param int $iIndentNumber Usually 4 for space or 1 for tabs
      *
      * @access public
      * @return void
      */
-    public function setIndentNumber($iIndentNumber) 
+    public function setIndentNumber($iIndentNumber)
     {
         $this->iIndentNumber = $iIndentNumber;
     }
 
     /**
      * Character used as a new line
-     * 
+     *
      * @param string $sNewLine ussualy "\n", "\r\n" or "\r"
      *
      * @access public
      * @return void
      */
-    public function setNewLine($sNewLine) 
+    public function setNewLine($sNewLine)
     {
         $this->sNewLine = $sNewLine;
     }
 
     /**
      * Set the file for beautify
-     * 
+     *
      * @param string $sFile Path to file
      *
      * @access public
      * @return void
      * @throws Exception
      */
-    public function setInputFile($sFile) 
+    public function setInputFile($sFile)
     {
         $bCli = (php_sapi_name() == 'cli');
         if (strpos($sFile, '://') === false and !file_exists($sFile) and !($bCli and $sFile == STDIN)) {
@@ -738,20 +738,20 @@ class PHP_Beautifier implements PHP_Beautifier_Interface
 
     /**
      * Set the output file for beautify
-     * 
+     *
      * @param string $sFile Path to file
      *
      * @access public
      * @return void
      */
-    public function setOutputFile($sFile) 
+    public function setOutputFile($sFile)
     {
         $this->sOutputFile = $sFile;
     }
 
     /**
      * Save the beautified code to output file
-     * 
+     *
      * @param string $sFile path to file. If null, {@link $sOutputFile} if exists, throw exception otherwise
      *
      * @access public
@@ -759,7 +759,7 @@ class PHP_Beautifier implements PHP_Beautifier_Interface
      * @see setOutputFile();
      * @throws Exception
      */
-    public function save($sFile = null) 
+    public function save($sFile = null)
     {
         $bCli = (php_sapi_name() == 'cli');
         if (!$sFile) {
@@ -784,24 +784,24 @@ class PHP_Beautifier implements PHP_Beautifier_Interface
 
     /**
      * Set a string for beautify
-     * 
+     *
      * @param string $sText Must be preceded by open tag
      *
      * @access public
      * @return void
      */
-    public function setInputString($sText) 
+    public function setInputString($sText)
     {
         $this->sText = $sText;
     }
-     
+
     /**
      * Reset all properties
-     * 
+     *
      * @access private
      * @return void
      */
-    private function resetProperties() 
+    private function resetProperties()
     {
         $aProperties = array(
             'aTokens' => array() ,
@@ -829,12 +829,12 @@ class PHP_Beautifier implements PHP_Beautifier_Interface
 
     /**
      * Process the string or file to beautify
-     * 
+     *
      * @access public
      * @return bool true on success
      * @throws Exception
      */
-    public function process() 
+    public function process()
     {
         $this->oLog->log('Init process of ' . (($this->sInputFile) ? 'file ' . $this->sInputFile : 'string'), PEAR_LOG_DEBUG);
         $this->resetProperties();
@@ -924,26 +924,26 @@ class PHP_Beautifier implements PHP_Beautifier_Interface
 
     /**
      * Get the reference to {@link $aOut}, based on the number of the token
-     * 
+     *
      * @param int $iIndex Token number
      *
      * @access public
      * @return mixed false array or false if token doesn't exists
      */
-    public function getTokenAssoc($iIndex) 
+    public function getTokenAssoc($iIndex)
     {
         return (array_key_exists($iIndex, $this->aAssocs)) ? $this->aAssocs[$iIndex] : false;
     }
 
     /**
      * Get the output for the specified token
-     * 
+     *
      * @param int $iIndex Token number
      *
      * @access public
      * @return mixed string or false if token doesn't exists
      */
-    public function getTokenAssocText($iIndex) 
+    public function getTokenAssocText($iIndex)
     {
         if (!($aAssoc = $this->getTokenAssoc($iIndex))) {
             return false;
@@ -953,14 +953,14 @@ class PHP_Beautifier implements PHP_Beautifier_Interface
 
     /**
      * Replace the output for specified token
-     * 
+     *
      * @param int    $iIndex Token Number
      * @param string $sText  Replace text
      *
      * @access public
      * @return bool
      */
-    public function replaceTokenAssoc($iIndex, $sText) 
+    public function replaceTokenAssoc($iIndex, $sText)
     {
         if (!($aAssoc = $this->getTokenAssoc($iIndex))) {
             return false;
@@ -974,27 +974,27 @@ class PHP_Beautifier implements PHP_Beautifier_Interface
 
     /**
      * Return the function for a token constant or string.
-     * 
+     *
      * @param mixed $sTokenType Token constant or string
      *
      * @access public
      * @return mixed name of function or false
      */
-    public function getTokenFunction($sTokenType) 
+    public function getTokenFunction($sTokenType)
     {
         return (array_key_exists($sTokenType, $this->aTokenFunctions)) ? strtolower($this->aTokenFunctions[$sTokenType]) : false;
     }
 
     /**
      * Process a callback from the code to beautify
-     * 
+     *
      * @param array $aMatch third parameter from preg_match
      *
      * @access private
      * @return bool
      * @uses controlToken()
      */
-    private function processCallback($aMatch) 
+    private function processCallback($aMatch)
     {
         if (stristr('php_beautifier', $aMatch[1]) and method_exists($this, $aMatch[3])) {
             if (preg_match("/^(set|add)/i", $aMatch[3]) and !stristr('file', $aMatch[3])) {
@@ -1014,13 +1014,13 @@ class PHP_Beautifier implements PHP_Beautifier_Interface
 
     /**
      * Assign value for some variables with the information of the token
-     * 
+     *
      * @param array $aCurrentToken Current token
      *
      * @access private
      * @return void
      */
-    private function controlToken($aCurrentToken) 
+    private function controlToken($aCurrentToken)
     {
         // is a control structure opener?
         if (in_array($aCurrentToken[0], $this->aControlStructures)) {
@@ -1096,16 +1096,16 @@ class PHP_Beautifier implements PHP_Beautifier_Interface
             $this->setMode('include');
         }
     }
-     
+
     /**
      * Assign value for some variables with the information of the token, after processing
-     * 
+     *
      * @param array $aCurrentToken Current token
      *
      * @access private
      * @return void
      */
-    private function controlTokenPost($aCurrentToken) 
+    private function controlTokenPost($aCurrentToken)
     {
         switch ($aCurrentToken[0]) {
         case ')':
@@ -1125,7 +1125,7 @@ class PHP_Beautifier implements PHP_Beautifier_Interface
                 }
 
                 $this->oLog->log('end bracket:' . $this->getPreviousTokenContent($prevIndex), PEAR_LOG_DEBUG);
-                
+
                 if ($this->isPreviousTokenContent(array(';','}','{'), $prevIndex)) {
                     if (end($this->aControlSeq)!=T_DO) {
                         $this->popControlSeq();
@@ -1174,13 +1174,13 @@ class PHP_Beautifier implements PHP_Beautifier_Interface
 
     /**
      * Push a control construct to the stack
-     * 
+     *
      * @param array $aToken Current token
      *
      * @access private
      * @return void
      */
-    private function pushControlSeq($aToken) 
+    private function pushControlSeq($aToken)
     {
         $this->oLog->log('Push Control:' . $aToken[0] . "->" . $aToken[1], PEAR_LOG_DEBUG);
         array_push($this->aControlSeq, $aToken[0]);
@@ -1188,11 +1188,11 @@ class PHP_Beautifier implements PHP_Beautifier_Interface
 
     /**
      * Pop a control construct from the stack
-     * 
+     *
      * @access private
      * @return int token constant
      */
-    private function popControlSeq() 
+    private function popControlSeq()
     {
         $aEl = array_pop($this->aControlSeq);
         if ($aEl) {
@@ -1204,11 +1204,11 @@ class PHP_Beautifier implements PHP_Beautifier_Interface
     }
     /**
      * Push a new Control Instruction on the stack
-     * 
+     *
      * @access private
      * @return void
      */
-    private function pushControlParenthesis() 
+    private function pushControlParenthesis()
     {
         $iPrevious = $this->getPreviousTokenConstant();
         $this->oLog->log("Push Parenthesis: $iPrevious ->" . $this->getPreviousTokenContent(), PEAR_LOG_DEBUG);
@@ -1219,11 +1219,11 @@ class PHP_Beautifier implements PHP_Beautifier_Interface
 
     /**
      * Pop the last Control instruction for parenthesis from the stack
-     * 
+     *
      * @access private
      * @return int constant
      */
-    private function popControlParenthesis() 
+    private function popControlParenthesis()
     {
         $iPop = array_pop($this->aControlParenthesis);
         $this->oLog->log('Pop Parenthesis:' . $iPop, PEAR_LOG_DEBUG);
@@ -1232,37 +1232,37 @@ class PHP_Beautifier implements PHP_Beautifier_Interface
 
     /**
      * Set the filetype
-     * 
+     *
      * @param mixed $sType Type
      *
      * @access public
      * @return void
      */
-    public function setFileType($sType) 
+    public function setFileType($sType)
     {
         $this->sFileType = $sType;
     }
 
     /**
      * Set the Beautifier on or off
-     * 
+     *
      * @param mixed $sFlag true or false
      *
      * @access public
      * @return void
      */
-    public function setBeautify($sFlag) 
+    public function setBeautify($sFlag)
     {
         $this->bBeautify = (bool)$sFlag;
     }
 
     /**
      * Show the beautified code
-     * 
+     *
      * @access public
      * @return void
      */
-    public function show() 
+    public function show()
     {
         echo $this->get();
     }
@@ -1273,7 +1273,7 @@ class PHP_Beautifier implements PHP_Beautifier_Interface
      * you can activate this hack and use (delete the space between * and /)
      * <code>/**ndps** /</code>
      * in {@link get()}, this text will be erased.
-     * 
+     *
      * @param mixed $bFlag true or false
      *
      * @access public
@@ -1281,19 +1281,19 @@ class PHP_Beautifier implements PHP_Beautifier_Interface
      * @see removeWhitespace()
      * @see PHP_Beautifier_Filter_NewLines
      */
-    public function setNoDeletePreviousSpaceHack($bFlag = true) 
+    public function setNoDeletePreviousSpaceHack($bFlag = true)
     {
         $this->bNdps = $bFlag;
     }
-     
+
     /**
      * Returns the beautified code
-     * 
+     *
      * @access public
      * @see setNoDeletePreviousSpaceHack()
      * @return string
      */
-    public function get() 
+    public function get()
     {
         if (!$this->bNdps) {
             return implode('', $this->aOut);
@@ -1304,26 +1304,26 @@ class PHP_Beautifier implements PHP_Beautifier_Interface
 
     /**
      * Returns the value of a settings
-     * 
+     *
      * @param string $sKey Name of the setting
      *
      * @access public
      * @return mixed Value of the settings or false
      */
-    public function getSetting($sKey) 
+    public function getSetting($sKey)
     {
         return (array_key_exists($sKey, $this->aSettings)) ? $this->aSettings[$sKey] : false;
     }
 
     /**
      * Get the token constant for the current control construct
-     * 
+     *
      * @param int $iRet Current token -'x'
      *
      * @access public
      * @return mixed token constant or false
      */
-    public function getControlSeq($iRet = 0) 
+    public function getControlSeq($iRet = 0)
     {
         $iIndex = count($this->aControlSeq) -$iRet-1;
         return ($iIndex >= 0) ? $this->aControlSeq[$iIndex] : false;
@@ -1331,13 +1331,13 @@ class PHP_Beautifier implements PHP_Beautifier_Interface
 
     /**
      * Get the token constant for the current Parenthesis
-     * 
+     *
      * @param int $iRet Current token -'x'
      *
      * @access public
      * @return mixed token constant or false
      */
-    public function getControlParenthesis($iRet = 0) 
+    public function getControlParenthesis($iRet = 0)
     {
         $iIndex = count($this->aControlParenthesis) -$iRet-1;
         return ($iIndex >= 0) ? $this->aControlParenthesis[$iIndex] : false;
@@ -1345,73 +1345,73 @@ class PHP_Beautifier implements PHP_Beautifier_Interface
     ////
     // Mode methods
     ////
-    
+
     /**
      * Set a mode to true
-     * 
+     *
      * @param string $sKey Name of the mode
      *
      * @access public
      * @return void
      */
-    public function setMode($sKey) 
+    public function setMode($sKey)
     {
         $this->aModes[$sKey] = true;
     }
 
     /**
      * Set a mode to false
-     * 
+     *
      * @param string $sKey Name of the mode
      *
      * @access public
      * @return void
      */
-    public function unsetMode($sKey) 
+    public function unsetMode($sKey)
     {
         $this->aModes[$sKey] = false;
     }
 
     /**
      * Get the state of a mode
-     * 
+     *
      * @param string $sKey name of the mode
      *
      * @access public
      * @return bool
      */
-    public function getMode($sKey) 
+    public function getMode($sKey)
     {
         return array_key_exists($sKey, $this->aModes) ? $this->aModes[$sKey] : false;
     }
     /////
     // Filter methods
     /////
-    
+
 
     /**
      * Add a string to the output
-     * 
+     *
      * @param mixed $token String to add
      *
      * @access public
      * @return void
      */
-    public function add($token) 
+    public function add($token)
     {
         $this->aOut[] = $token;
     }
 
     /**
      * Delete the last added output(s)
-     * 
+     *
      * @param int $iReps Number of outputs to drop
      *
      * @access public
      * @return void
      * @deprecated
      */
-    public function pop($iReps = 1) 
+    public function pop($iReps = 1)
     {
         for ($x = 0 ; $x < $iReps ; $x++) {
             $sLast = array_pop($this->aOut);
@@ -1421,14 +1421,14 @@ class PHP_Beautifier implements PHP_Beautifier_Interface
 
     /**
      * Add Indent to the output
-     * 
+     *
      * @access public
      * @return void
      * @see $sIndentChar
      * @see $iIndentNumber
      * @see $iIndent
      */
-    public function addIndent() 
+    public function addIndent()
     {
         $this->aOut[] = str_repeat($this->sIndentChar, $this->iIndent);
     }
@@ -1437,25 +1437,25 @@ class PHP_Beautifier implements PHP_Beautifier_Interface
      * Set a string to put before a new line
      * You could use this to put a standard comment after some sentences
      * or to add extra newlines
-     * 
+     *
      * @param mixed $sText String to put
      *
      * @access public
      * @return void
      */
-    public function setBeforeNewLine($sText) 
+    public function setBeforeNewLine($sText)
     {
         $this->sBeforeNewLine = $sText;
     }
 
     /**
      * Add a new line to the output
-     * 
+     *
      * @access public
      * @return void
      * @see $sNewLine
      */
-    public function addNewLine() 
+    public function addNewLine()
     {
         if (!is_null($this->sBeforeNewLine)) {
             $this->aOut[] = $this->sBeforeNewLine;
@@ -1466,7 +1466,7 @@ class PHP_Beautifier implements PHP_Beautifier_Interface
 
     /**
      * Add a new line and a indent to output
-     * 
+     *
      * @access public
      * @return void
      * @see $sIndentChar
@@ -1474,7 +1474,7 @@ class PHP_Beautifier implements PHP_Beautifier_Interface
      * @see $iIndent
      * @see $sNewLine
      */
-    public function addNewLineIndent() 
+    public function addNewLineIndent()
     {
         if (!is_null($this->sBeforeNewLine)) {
             $this->aOut[] = $this->sBeforeNewLine;
@@ -1487,13 +1487,13 @@ class PHP_Beautifier implements PHP_Beautifier_Interface
     /**
      * Increments the indent in X chars.
      * If param omitted, used {@link iIndentNumber }
-     * 
+     *
      * @param int $iIncr increment indent in x chars
      *
      * @access public
      * @return void
      */
-    public function incIndent($iIncr = false) 
+    public function incIndent($iIncr = false)
     {
         if (!$iIncr) {
             $iIncr = $this->iIndentNumber;
@@ -1504,11 +1504,11 @@ class PHP_Beautifier implements PHP_Beautifier_Interface
 
     /**
      * Decrements the indent.
-     * 
+     *
      * @access public
      * @return void
      */
-    public function decIndent() 
+    public function decIndent()
     {
         if (count($this->aIndentStack > 1)) {
             $iLastIndent = array_pop($this->aIndentStack);
@@ -1520,16 +1520,16 @@ class PHP_Beautifier implements PHP_Beautifier_Interface
     // Methods to lookup previous, next tokens
     ////
     //
-    
+
     /**
      * Get the 'x' significant (non whitespace)previous token
-     * 
+     *
      * @param int $iPrev current-x token
      *
      * @access private
      * @return mixed array or false
      */
-    private function getPreviousToken($iPrev = 1) 
+    private function getPreviousToken($iPrev = 1)
     {
         for ($x = $this->iCount-1 ; $x >= 0 ; $x--) {
             $aToken = &$this->getToken($x);
@@ -1544,13 +1544,13 @@ class PHP_Beautifier implements PHP_Beautifier_Interface
 
     /**
      * Get the 'x' significant (non whitespace) next token
-     * 
+     *
      * @param int $iNext current+x token
      *
      * @access private
      * @return array
      */
-    private function getNextToken($iNext = 1) 
+    private function getNextToken($iNext = 1)
     {
         for ($x = $this->iCount+1 ; $x < (count($this->aTokens) -1) ; $x++) {
             $aToken = &$this->getToken($x);
@@ -1565,14 +1565,14 @@ class PHP_Beautifier implements PHP_Beautifier_Interface
 
     /**
      * Return true if any of the constant defined is param 1 is the previous 'x' constant
-     * 
+     *
      * @param mixed $mValue integer (constant) or array of constants
      * @param int   $iPrev  current-x token
      *
      * @access public
      * @return bool
      */
-    public function isPreviousTokenConstant($mValue, $iPrev = 1) 
+    public function isPreviousTokenConstant($mValue, $iPrev = 1)
     {
         if (!is_array($mValue)) {
             $mValue = array(
@@ -1585,14 +1585,14 @@ class PHP_Beautifier implements PHP_Beautifier_Interface
 
     /**
      * Return true if any of the content defined is param 1 is the previous 'x' content
-     * 
+     *
      * @param mixed $mValue string (content) or array of contents
      * @param int   $iPrev  current-x token
      *
      * @access public
      * @return bool
      */
-    public function isPreviousTokenContent($mValue, $iPrev = 1) 
+    public function isPreviousTokenContent($mValue, $iPrev = 1)
     {
         if (!is_array($mValue)) {
             $mValue = array(
@@ -1605,14 +1605,14 @@ class PHP_Beautifier implements PHP_Beautifier_Interface
 
     /**
      * Return true if any of the constant defined in param 1 is the next 'x' content
-     * 
+     *
      * @param mixed $mValue int (constant) or array of constants
      * @param int   $iPrev  current-x token
      *
      * @access public
      * @return bool
      */
-    public function isNextTokenConstant($mValue, $iPrev = 1) 
+    public function isNextTokenConstant($mValue, $iPrev = 1)
     {
         if (!is_array($mValue)) {
             $mValue = array(
@@ -1625,14 +1625,14 @@ class PHP_Beautifier implements PHP_Beautifier_Interface
 
     /**
      * Return true if any of the content defined is param 1 is the next 'x' content
-     * 
+     *
      * @param mixed $mValue string(content) or array of contents
      * @param int   $iPrev  current-x token
      *
      * @access public
      * @return bool
      */
-    public function isNextTokenContent($mValue, $iPrev = 1) 
+    public function isNextTokenContent($mValue, $iPrev = 1)
     {
         if (!is_array($mValue)) {
             $mValue = array(
@@ -1642,16 +1642,16 @@ class PHP_Beautifier implements PHP_Beautifier_Interface
         $iNext = $this->getNextTokenContent($iPrev);
         return in_array($iNext, $mValue);
     }
-     
+
     /**
      * Get the 'x' significant (non whitespace) previous token constant
-     * 
+     *
      * @param int $iPrev current-x token
      *
      * @access public
      * @return int
      */
-    public function getPreviousTokenConstant($iPrev = 1) 
+    public function getPreviousTokenConstant($iPrev = 1)
     {
         $sToken = $this->getPreviousToken($iPrev);
         return $sToken[0];
@@ -1659,26 +1659,26 @@ class PHP_Beautifier implements PHP_Beautifier_Interface
 
     /**
      * Get the 'x' significant (non whitespace) previous token text
-     * 
+     *
      * @param int $iPrev current-x token
      *
      * @access public
      * @return void
      */
-    public function getPreviousTokenContent($iPrev = 1) 
+    public function getPreviousTokenContent($iPrev = 1)
     {
         $mToken = $this->getPreviousToken($iPrev);
         return (is_string($mToken)) ? $mToken : $mToken[1];
     }
     /**
      * Get the 'x' significant (non comment) previous token text
-     * 
+     *
      * @param int $iPrev current-x token
      *
      * @access public
      * @return void
      */
-    public function getNextTokenNonCommentConstant($iPrev = 1) 
+    public function getNextTokenNonCommentConstant($iPrev = 1)
     {
         do {
             $aToken = $this->getNextToken($iPrev);
@@ -1689,13 +1689,13 @@ class PHP_Beautifier implements PHP_Beautifier_Interface
 
     /**
      * Get the 'x' significant (non whitespace) next token constant
-     * 
+     *
      * @param int $iPrev current-x token
      *
      * @access public
      * @return void
      */
-    public function getNextTokenConstant($iPrev = 1) 
+    public function getNextTokenConstant($iPrev = 1)
     {
         $sToken = $this->getNextToken($iPrev);
         return $sToken[0];
@@ -1703,13 +1703,13 @@ class PHP_Beautifier implements PHP_Beautifier_Interface
 
     /**
      * Get the 'x' significant (non whitespace) next token text
-     * 
+     *
      * @param int $iNext Current+x token
      *
      * @access public
      * @return void
      */
-    public function getNextTokenContent($iNext = 1) 
+    public function getNextTokenContent($iNext = 1)
     {
         $mToken = $this->getNextToken($iNext);
         return (is_string($mToken)) ? $mToken : $mToken[1];
@@ -1720,12 +1720,12 @@ class PHP_Beautifier implements PHP_Beautifier_Interface
      * Ex.: You have
      * '    if($a)'
      * if you call this funcion on 'if', you get '    '
-     * 
+     *
      * @access public
      * @todo implements a more economic way to handle this.
      * @return string previous whitespace
      */
-    public function getPreviousWhitespace() 
+    public function getPreviousWhitespace()
     {
         $sWhiteSpace = '';
         $aMatch=array();
@@ -1755,13 +1755,13 @@ class PHP_Beautifier implements PHP_Beautifier_Interface
 
     /**
      * Remove all whitespace from the previous tag
-     * 
+     *
      * @access public
      * @return bool  false if previous token was short comment or heredoc
      *               (don't remove ws)
      *               true anything else.
      */
-    public function removeWhitespace() 
+    public function removeWhitespace()
     {
         // if the previous token was
         // - a short comment
@@ -1770,7 +1770,7 @@ class PHP_Beautifier implements PHP_Beautifier_Interface
         //
         if ($this->isPreviousTokenConstant(T_COMMENT) and preg_match("/^(\/\/|#)/", $this->getPreviousTokenContent())) { // Here for short comment
             return false;
-        } elseif ($this->isPreviousTokenConstant(T_END_HEREDOC) && $this->getToken($this->iCount) != ';') { 
+        } elseif ($this->isPreviousTokenConstant(T_END_HEREDOC) && $this->getToken($this->iCount) != ';') {
             return false;
         } elseif ($this->getPreviousTokenConstant(2) == T_END_HEREDOC) { // And here for heredoc
             return false;
@@ -1779,8 +1779,10 @@ class PHP_Beautifier implements PHP_Beautifier_Interface
         for ($i = count($this->aOut) -1 ; $i >= 0 ; $i--) { // go backwards
             $cNow = &$this->aOut[$i];
             if (strlen(trim($cNow)) == 0) { // only space
-                array_pop($this->aOut); // delete it!
-                $pop++;
+                if (!$this->addedBlankLine || ($cNow!="\r" && $cNow!="\n")) {
+                    array_pop($this->aOut); // delete it!
+                    $pop++;
+                }
             } else { // we find something!
                 $cNow = rtrim($cNow); // rtrim out
                 break;
@@ -1789,16 +1791,16 @@ class PHP_Beautifier implements PHP_Beautifier_Interface
         $this->oLog->log("-space $pop", PEAR_LOG_DEBUG);
         return true;
     }
-     
+
     /**
      * Get a token by number
-     * 
+     *
      * @param mixed $iIndex Number of the token
      *
      * @access public
      * @return array
      */
-    public function &getToken($iIndex) 
+    public function &getToken($iIndex)
     {
         if ($iIndex < 0 or $iIndex > count($this->aTokens)) {
             return false;
@@ -1807,16 +1809,16 @@ class PHP_Beautifier implements PHP_Beautifier_Interface
         }
     }
     /**
-     * openBraceDontProcess 
-     * 
+     * openBraceDontProcess
+     *
      * @access public
      * @return void
      */
     public function openBraceDontProcess()
     {
         return $this->isPreviousTokenConstant(T_VARIABLE)
-            or $this->isPreviousTokenConstant(T_OBJECT_OPERATOR) 
-            or ($this->isPreviousTokenConstant(T_STRING) and $this->getPreviousTokenConstant(2) == T_OBJECT_OPERATOR) 
+            or $this->isPreviousTokenConstant(T_OBJECT_OPERATOR)
+            or ($this->isPreviousTokenConstant(T_STRING) and $this->getPreviousTokenConstant(2) == T_OBJECT_OPERATOR)
             or $this->getMode('double_quote');
     }
 }
