@@ -235,9 +235,6 @@ final class PHP_Beautifier_Filter_Default extends PHP_Beautifier_Filter
                 $this->oBeaut->add($sTag);
             }
             $this->oBeaut->incIndent();
-            if ($this->oBeaut->getControlSeq() == T_SWITCH) {
-                $this->oBeaut->incIndent();
-            }
             $this->oBeaut->addNewLineIndent();
         }
     }
@@ -258,10 +255,6 @@ final class PHP_Beautifier_Filter_Default extends PHP_Beautifier_Filter
         } else {
             $this->oBeaut->removeWhitespace();
             $this->oBeaut->decIndent();
-            if ($this->oBeaut->getControlSeq() == T_SWITCH) {
-                $this->oBeaut->decIndent();
-
-            }
             $this->oBeaut->addNewLineIndent();
             $this->oBeaut->add($sTag);
             if ($this->oBeaut->getControlSeq() == T_DO) {
@@ -693,15 +686,8 @@ final class PHP_Beautifier_Filter_Default extends PHP_Beautifier_Filter
      */
     function t_break($sTag)
     {
-        if ($this->oBeaut->getControlSeq() == T_SWITCH) {
-            $this->oBeaut->removeWhitespace();
-            $this->oBeaut->decIndent();
-            $this->oBeaut->addNewLineIndent();
-            $this->oBeaut->add($sTag);
-            $this->oBeaut->incIndent();
-        } else {
-            $this->oBeaut->add($sTag);
-        }
+        $this->oBeaut->add($sTag);
+
         if ($this->oBeaut->isNextTokenConstant(T_LNUMBER)) {
             $this->oBeaut->add(" ");
         }
