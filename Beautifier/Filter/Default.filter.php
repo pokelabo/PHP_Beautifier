@@ -178,7 +178,7 @@ final class PHP_Beautifier_Filter_Default extends PHP_Beautifier_Filter
      */
     function t_case($sTag)
     {
-        $this->oBeaut->removeWhitespace();
+        $this->oBeaut->removeWhitespace(true);
         $this->oBeaut->decIndent();
         $this->oBeaut->addNewLineIndent();
         $this->oBeaut->add($sTag . ' ');
@@ -253,7 +253,7 @@ final class PHP_Beautifier_Filter_Default extends PHP_Beautifier_Filter
             $this->oBeaut->add($sTag);
 
         } else {
-            $this->oBeaut->removeWhitespace();
+            $this->oBeaut->removeWhitespace(true);
             $this->oBeaut->decIndent();
             $this->oBeaut->addNewLineIndent();
             $this->oBeaut->add($sTag);

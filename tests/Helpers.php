@@ -1,5 +1,5 @@
 <?php
-require_once 'PHPUnit/Framework.php';
+//require_once 'PHPUnit/Framework.php';
 # use pear or local version of php_beautifier
 
 if (file_exists(dirname(__FILE__).'/../Beautifier.php')) {
@@ -13,8 +13,8 @@ class Test_Filter extends PHP_Beautifier_Filter {
     public $aTokens = array();
     public $aModes = array();
     public $iIndex = 0;
-    function handleToken($token) 
-    {                
+    function handleToken($token)
+    {
         $this->oBeaut->add($token[1]);
         $this->aTokens[] = $token;
         foreach($this->oBeaut->aModesAvailable as $sMode) {
@@ -26,9 +26,9 @@ class Test_Filter extends PHP_Beautifier_Filter {
 
 class PHP_Beautifier_Filter_BBY extends PHP_Beautifier_Filter {
     function t_access($sTag) {
-        $this->oBeaut->add($this->oBeaut->getTokenName($this->oBeaut->getControlSeq())); return PHP_Beautifier_Filter::BYPASS; 
-    } 
-} 
+        $this->oBeaut->add($this->oBeaut->getTokenName($this->oBeaut->getControlSeq())); return PHP_Beautifier_Filter::BYPASS;
+    }
+}
 
 
 ?>
