@@ -21,12 +21,12 @@
 require_once('Helpers.php');
 
 class BeautifierTest extends PHPUnit_Framework_TestCase {
-    function setUp() 
+    function setUp()
     {
         $this->oBeaut = new PHP_Beautifier();
         $this->oBeaut->setInputFile(__FILE__);
     }
-    function testsetInputFile() 
+    function testsetInputFile()
     {
         $this->assertTrue($this->oBeaut->setInputFile(__FILE__));
         try {
@@ -36,21 +36,21 @@ class BeautifierTest extends PHPUnit_Framework_TestCase {
             $this->assertTrue($oExp instanceof Exception);
         }
     }
-    function testaddFilterDirectory() 
+    function testaddFilterDirectory()
     {
         $sDir = PHP_Beautifier_Common::normalizeDir(dirname(__FILE__));
         $this->oBeaut->addFilterDirectory($sDir);
         $aDirs = $this->oBeaut->getFilterDirectories();
         $this->assertEquals(end($aDirs) , $sDir);
     }
-    function testgetFilterList() 
+    function testgetFilterList()
     {
         $aFilterList = array(
             'Default'
         );
         $this->assertEquals($aFilterList, $this->oBeaut->getFilterList());
     }
-    function testaddFilter() 
+    function testaddFilter()
     {
         if(file_exists('../Beautifier/Filter/ArrayNested.filter.php')) {
             include_once('../Beautifier/Filter/ArrayNested.filter.php');
@@ -76,7 +76,7 @@ class BeautifierTest extends PHPUnit_Framework_TestCase {
             $this->assertTrue($oExp instanceof Exception_PHP_Beautifier_Filter);
         }
     }
-    public function testgetFilterListTotal() 
+    public function testgetFilterListTotal()
     {
         $aEspFilters = array(
             'Default',
@@ -95,42 +95,42 @@ class BeautifierTest extends PHPUnit_Framework_TestCase {
         $aRealFilters = $this->oBeaut->getFilterListTotal();
         $this->assertEquals($aEspFilters, $aRealFilters);
     }
-    function testsetIndentChar() 
+    function testsetIndentChar()
     {
         $this->oBeaut->setIndentChar('*');
         $this->assertEquals('*', $this->oBeaut->sIndentChar);
     }
-    function testsetIndentNumber() 
+    function testsetIndentNumber()
     {
         $this->oBeaut->setIndentNumber('5');
         $this->assertEquals(5, $this->oBeaut->iIndentNumber);
     }
-    function testsetNewLine() 
+    function testsetNewLine()
     {
         $this->oBeaut->setNewLine("\r\n");
         $this->assertEquals("\r\n", $this->oBeaut->sNewLine);
     }
-    function testsetOutputFile() 
+    function testsetOutputFile()
     {
         $this->oBeaut->setOutputFile('test.php');
         $this->assertEquals("test.php", $this->oBeaut->sOutputFile);
     }
-    function testsetMode() 
+    function testsetMode()
     {
         $this->oBeaut->setMode('test');
         $this->assertTrue($this->oBeaut->getMode('test'));
     }
-    function testunsetMode() 
+    function testunsetMode()
     {
         $this->oBeaut->unsetMode('test');
         $this->assertFalse($this->oBeaut->getMode('test'));
     }
-    function testGetFilterDescription() 
+    function testGetFilterDescription()
     {
         $oFilter = new PHP_Beautifier_Filter_Default($this->oBeaut);
         $this->assertEquals($this->oBeaut->getFilterDescription('Default') , $oFilter);
     }
-    function testsave() 
+    function testsave()
     {
         $sTempFile = tempnam("/tmp", "PHP_TEST");
         $this->oBeaut->process();
@@ -138,12 +138,12 @@ class BeautifierTest extends PHPUnit_Framework_TestCase {
         $this->assertEquals(preg_replace("/\s/", "", file_get_contents(__FILE__)) , preg_replace("/\s/", "", file_get_contents($sTempFile)));
         @unlink($sTempFile);
     }
-    function testget() 
+    function testget()
     {
         $this->oBeaut->process();
         $this->assertEquals(preg_replace("/\s/", "", file_get_contents(__FILE__)) , preg_replace("/\s/", "", $this->oBeaut->get()));
     }
-    function testComments() 
+    function testComments()
     {
         $sTextOriginal = <<<SCRIPT
 <?php
@@ -191,7 +191,7 @@ SCRIPT;
             $this->assertEquals($sTextExpected, $sTextActual);
 
     }
-function testDocComment() 
+function testDocComment()
     {
         $sTextOriginal = <<<SCRIPT
 <?php
@@ -253,38 +253,38 @@ SCRIPT;
         $sTextExpected = <<<SCRIPT
 <?php
 switch (\$a) {
+case 1:
+case 2:
+    switch (\$b) {
     case 1:
     case 2:
-        switch (\$b) {
-            case 1:
-            case 2:
-                switch (\$c) {
-                    case 1:
-                    case 2:
-                        echo "hola";
-                    break;
-                    default:
-                        echo "leso";
-                    break;
-                }
+        switch (\$c) {
+        case 1:
+        case 2:
+            echo "hola";
             break;
-            case 3:
-                echo "hola";
+        default:
+            echo "leso";
             break;
         }
+        break;
+    case 3:
+        echo "hola";
+        break;
+    }
     break;
 }
 ?>
 SCRIPT;
         $this->oBeaut->setInputString($sTextOriginal);
         $this->oBeaut->process();
-        $this->assertEquals($sTextExpected,$this->oBeaut->get());            
-    
+        $this->assertEquals($sTextExpected,$this->oBeaut->get());
+
     }
     /*
     function testresetProperties() {
     }
-    
+
     function testgetTokenAssoc() {
     }
     function testgetTokenAssocText() {
@@ -309,14 +309,14 @@ SCRIPT;
     }
     function testshow() {
     }
-    
+
     function testgetSetting() {
     }
     function testgetControlSeq() {
     }
     function testgetControlParenthesis() {
     }
-    
+
     function testgetMode() {
     }
     function testadd() {

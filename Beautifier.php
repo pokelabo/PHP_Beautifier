@@ -20,7 +20,7 @@
  * @link      http://pear.php.net/package/PHP_Beautifier
  * @link      http://beautifyphp.sourceforge.net
  */
-error_reporting(E_ALL);
+error_reporting(E_ALL & ~E_DEPRECATED & ~E_STRICT);
 // Before all, test the tokenizer extension
 if (!extension_loaded('tokenizer')) {
     throw new Exception("Compile php with tokenizer extension. Use --enable-tokenizer or don't use --disable-all on configure.");
@@ -1761,19 +1761,21 @@ class PHP_Beautifier implements PHP_Beautifier_Interface
      *               (don't remove ws)
      *               true anything else.
      */
-    public function removeWhitespace()
+    public function removeWhitespace($force = false)
     {
         // if the previous token was
         // - a short comment
         // - heredoc
         // don't remove whitespace!
         //
-        if ($this->isPreviousTokenConstant(T_COMMENT) and preg_match("/^(\/\/|#)/", $this->getPreviousTokenContent())) { // Here for short comment
-            return false;
-        } elseif ($this->isPreviousTokenConstant(T_END_HEREDOC) && $this->getToken($this->iCount) != ';') {
-            return false;
-        } elseif ($this->getPreviousTokenConstant(2) == T_END_HEREDOC) { // And here for heredoc
-            return false;
+        if (!$force) {
+            if ($this->isPreviousTokenConstant(T_COMMENT) and preg_match("/^(\/\/|#)/", $this->getPreviousTokenContent())) { // Here for short comment
+                return false;
+            } elseif ($this->isPreviousTokenConstant(T_END_HEREDOC) && $this->getToken($this->iCount) != ';') {
+                return false;
+            } elseif ($this->getPreviousTokenConstant(2) == T_END_HEREDOC) { // And here for heredoc
+                return false;
+            }
         }
         $pop = 0;
         for ($i = count($this->aOut) -1 ; $i >= 0 ; $i--) { // go backwards
