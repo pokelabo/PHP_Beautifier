@@ -1,0 +1,26 @@
+{
+    "name": "pear/php-beautifier-poke",
+    "description": "Beautify PHP source code; customized for Pokelabo Coding Standards",
+    "homepage": "http://github.com/pokelabo/PHP_Beautifier",
+    "authors": [
+        {
+            "name": "Claudio Bustos",
+            "email": "clbustos@gmail.com"
+        },
+        {
+            "name": "Jesús Espino",
+            "email": "jespinog@gmail.com"
+        }
+    ],
+    "license": "PHP-3.0",
+    "require": {
+        "php": ">=5",
+        "ext-tokenizer": "*",
+        "pear/log": "dev-master",
+        "pear/pear_exception": "1.0.*@dev"
+    },
+    "target-dir": "PHP",
+    "autoload": {
+        "classmap": ["Beautifier.php"]
+    }
+}

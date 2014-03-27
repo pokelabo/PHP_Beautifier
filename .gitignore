@@ -8,3 +8,4 @@ pkg
 
 /composer.phar
 /composer.lock
+/vendor
