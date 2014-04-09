@@ -230,7 +230,13 @@ final class PHP_Beautifier_Filter_Default extends PHP_Beautifier_Filter
             $this->oBeaut->add($sTag);
         } else {
             if ($this->oBeaut->removeWhiteSpace()) {
-                $this->oBeaut->add(' ' . $sTag);
+                if ($this->oBeaut->getControlSeq() == T_CLASS ||
+                    $this->oBeaut->getControlSeq() == T_FUNCTION) {
+                    $this->oBeaut->addNewLineIndent();
+                    $this->oBeaut->add($sTag);
+                } else {
+                    $this->oBeaut->add(' ' . $sTag);
+                }
             } else {
                 $this->oBeaut->add($sTag);
             }
